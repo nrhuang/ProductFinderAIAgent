@@ -1,5 +1,6 @@
 import json
 from pathlib import Path
+from constants import *
 
 PRODUCTS_PATH = Path(__file__).resolve().parent.parent / "data/products.json"
 
@@ -7,13 +8,13 @@ def _eval_node(product: dict, node: dict) -> bool:
     """Recursively evaluate a filter tree node against a product."""
     op = node["op"].lower()
 
-    if op in ("and", "or", "not"):
+    if op in LOGICAL_OPS:
         conditions = node.get("conditions", [])
-        if op == "not":
+        if op == OP_NOT:
             if len(conditions) != 1:
                 raise ValueError(f"NOT node must have exactly 1 condition, got {len(conditions)}")
             return not _eval_node(product, conditions[0])
-        if op == "and":
+        if op == OP_AND:
             return all(_eval_node(product, child) for child in conditions)
         return any(_eval_node(product, child) for child in conditions)
 
@@ -27,19 +28,19 @@ def _eval_node(product: dict, node: dict) -> bool:
         product_value = (product_value or "").lower()
         value = value.lower() if isinstance(value, str) else value
 
-    if cmp_op == "eq":
+    if cmp_op == OP_EQ:
         return product_value == value
-    elif cmp_op == "ne":
+    elif cmp_op == OP_NE:
         return product_value != value
-    elif cmp_op == "lt":
+    elif cmp_op == OP_LT:
         return product_value < value
-    elif cmp_op == "lte":
+    elif cmp_op == OP_LTE:
         return product_value <= value
-    elif cmp_op == "gt":
+    elif cmp_op == OP_GT:
         return product_value > value
-    elif cmp_op == "gte":
+    elif cmp_op == OP_GTE:
         return product_value >= value
-    elif cmp_op == "contains":
+    elif cmp_op == OP_CONTAINS:
         return value.lower() in str(product_value).lower()
 
     return True
