@@ -4,6 +4,9 @@ from constants import *
 
 PRODUCTS_PATH = Path(__file__).resolve().parent.parent / "data/products.json"
 
+with open(PRODUCTS_PATH, "r") as _f:
+    _PRODUCTS = json.load(_f)
+
 def _eval_node(product: dict, node: dict) -> bool:
     """Recursively evaluate a filter tree node against a product."""
     op = node["op"].lower()
@@ -85,8 +88,7 @@ def search_products(filters: str = "") -> dict:
     Returns:
         A dict with 'status' and either 'products' list or 'message' string.
     """
-    with open(PRODUCTS_PATH, "r") as f:
-        products = json.load(f)
+    products = _PRODUCTS
 
     if not filters:
         results = products
