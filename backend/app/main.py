@@ -9,13 +9,12 @@ load_dotenv()
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
-
 from google.adk.runners import Runner
 from google.adk.sessions import InMemorySessionService
 from google.genai import types as genai_types
 
 from agent import root_agent
+from schemas.chat import ChatRequest, ChatResponse
 
 # ---------------------------------------------------------------------------
 # ADK setup
@@ -40,23 +39,10 @@ app = FastAPI(title="Product Finder AI Agent")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=os.getenv("ALLOWED_ORIGINS", "http://localhost:5173").split(","),
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-
-# ---------------------------------------------------------------------------
-# Request / Response schemas
-# ---------------------------------------------------------------------------
-class ChatRequest(BaseModel):
-    query: str
-    session_id: str = ""
-
-
-class ChatResponse(BaseModel):
-    text: str
-    products: list[dict] = []
 
 
 # ---------------------------------------------------------------------------
@@ -96,7 +82,7 @@ async def chat(request: ChatRequest) -> ChatResponse:
     ):
         if event.is_final_response() and event.content and event.content.parts:
             final_text = "".join(
-                part.text for part in event.content.parts if hasattr(part, "text") and part.text
+                part.text for part in event.content.parts if part.text
             )
 
     # Extract products JSON block
