@@ -7,17 +7,20 @@ PRODUCTS_PATH = Path(__file__).resolve().parent.parent.parent / "products.json"
 
 def _eval_node(product: dict, node: dict) -> bool:
     """Recursively evaluate a filter tree node against a product."""
-    op = node["op"].upper()
+    op = node["op"].lower()
 
-    if op in ("AND", "OR"):
+    if op in ("and", "or", "not"):
         conditions = node.get("conditions", [])
-        if op == "AND":
+        if op == "not":
+            if len(conditions) != 1:
+                raise ValueError(f"NOT node must have exactly 1 condition, got {len(conditions)}")
+            return not _eval_node(product, conditions[0])
+        if op == "and":
             return all(_eval_node(product, child) for child in conditions)
-        else:
-            return any(_eval_node(product, child) for child in conditions)
+        return any(_eval_node(product, child) for child in conditions)
 
     # Leaf node
-    field = node["field"]
+    field = node["field"].lower()
     cmp_op = op
     value = node["value"]
     product_value = product.get(field)
@@ -26,19 +29,19 @@ def _eval_node(product: dict, node: dict) -> bool:
         product_value = (product_value or "").lower()
         value = value.lower() if isinstance(value, str) else value
 
-    if cmp_op == "EQ":
+    if cmp_op == "eq":
         return product_value == value
-    elif cmp_op == "NE":
+    elif cmp_op == "ne":
         return product_value != value
-    elif cmp_op == "LT":
+    elif cmp_op == "lt":
         return product_value < value
-    elif cmp_op == "LTE":
+    elif cmp_op == "lte":
         return product_value <= value
-    elif cmp_op == "GT":
+    elif cmp_op == "gt":
         return product_value > value
-    elif cmp_op == "GTE":
+    elif cmp_op == "gte":
         return product_value >= value
-    elif cmp_op == "CONTAINS":
+    elif cmp_op == "contains":
         return value.lower() in str(product_value).lower()
 
     return True
@@ -53,15 +56,16 @@ def search_products(filters: str = "") -> dict:
 
                  Two node types:
 
-                 1. Group node — combines conditions with AND / OR / NOT:
-                    {"op": "AND" | "OR" | "NOT", "conditions": [<node>, ...]}
+                 1. Logical node:
+                    {"op": "AND" | "OR", "conditions": [<node>, ...]}
+                    {"op": "NOT", "conditions": [<exactly one node>]}
 
                  2. Leaf node:
                     {"field": "category" | "price" | "name",
                      "op": "eq" | "ne" | "lt" | "lte" | "gt" | "gte" | "contains",
                      "value": <string or number>}
 
-                 Example — (category is "clothing" OR "accessories") AND (price < 10 OR price > 40):
+                 Example — (category is "clothing" OR "accessories") AND (price < 10 OR price > 40) AND NOT (name contains "sale"):
                  {
                    "op": "AND",
                    "conditions": [
@@ -72,6 +76,9 @@ def search_products(filters: str = "") -> dict:
                      {"op": "OR", "conditions": [
                        {"field": "price", "op": "lt", "value": 10},
                        {"field": "price", "op": "gt", "value": 40}
+                     ]},
+                     {"op": "NOT", "conditions": [
+                       {"field": "name", "op": "contains", "value": "jacket"}
                      ]}
                    ]
                  }
@@ -92,7 +99,7 @@ def search_products(filters: str = "") -> dict:
 
         try:
             results = [p for p in products if _eval_node(p, filter_tree)]
-        except (KeyError, TypeError) as e:
+        except (KeyError, TypeError, ValueError) as e:
             return {"status": "error", "message": f"Invalid filter structure: {e}"}
 
     if not results:
@@ -113,7 +120,8 @@ root_agent = Agent(
 When a user asks about products, call search_products with a JSON filter tree.
 
 Filter tree rules:
-- Group node:   {"op": "AND"|"OR", "conditions": [...]}
+- AND/OR node:   {"op": "AND"|"OR", "conditions": [...]}
+- NOT node:     {"op": "NOT", "conditions": [<exactly one node>]}
 - Leaf node: {"field": "category"|"price"|"name", "op": "eq"|"ne"|"lt"|"lte"|"gt"|"gte"|"contains", "value": <string or number>}
 - category values must be one of: clothing, electronics, accessories, groceries
 - Omit filters (pass empty string) to return all products.
