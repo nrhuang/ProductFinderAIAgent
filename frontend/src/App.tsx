@@ -6,7 +6,7 @@ import ChatWindow from "./components/ChatWindow";
 const greetingMessage: Message = {
   id: "greeting",
   role: "agent",
-  text: "Hey! I'm your Product Finder assistant. Ask me about any product — I can search and recommend items for you.",
+  text: "Hey! I'm your Product Finder assistant. Tell me what you're looking for and I'll help you discover the best options.",
   products: [],
 };
 
