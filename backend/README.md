@@ -34,7 +34,8 @@ A FastAPI server that uses Google's Gemini 2.5 Flash model (via Google ADK) to p
 ## Running
 
 ```bash
-uvicorn app.main:app --reload
+cd app
+uvicorn main:app --reload
 ```
 
 The server starts on `http://localhost:8000` by default.
