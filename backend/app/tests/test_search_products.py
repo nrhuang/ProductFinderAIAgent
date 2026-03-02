@@ -10,6 +10,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from tools.search_products import search_products, _eval_node
 from schemas.product import Product
+from constants import MAX_FILTER_LENGTH
 
 
 # ---- helpers ----------------------------------------------------------------
@@ -84,6 +85,20 @@ class TestSearchProducts:
         result = search_products(f)
         assert result["status"] == "error"
         assert "Invalid filter structure" in result["message"]
+
+    def test_a11_filter_at_max_length(self):
+        f = json.dumps({"field": "category", "op": "eq", "value": "clothing"})
+        f = f.ljust(MAX_FILTER_LENGTH)
+        assert len(f) == MAX_FILTER_LENGTH
+        result = search_products(f)
+        # Padded JSON is still valid JSON; just verify no length error
+        assert result["status"] != "error" or "maximum length" not in result["message"]
+
+    def test_a12_filter_exceeds_max_length(self):
+        f = "x" * (MAX_FILTER_LENGTH + 1)
+        result = search_products(f)
+        assert result["status"] == "error"
+        assert "maximum length" in result["message"]
 
 
 # ---------------------------------------------------------------------------

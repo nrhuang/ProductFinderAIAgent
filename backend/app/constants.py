@@ -13,3 +13,6 @@ OP_GT = "gt"
 OP_GTE = "gte"
 OP_CONTAINS = "contains"
 COMPARISON_OPS = (OP_EQ, OP_NE, OP_LT, OP_LTE, OP_GT, OP_GTE, OP_CONTAINS)
+
+# Validation limits
+MAX_FILTER_LENGTH = 1000

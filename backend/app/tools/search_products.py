@@ -4,6 +4,7 @@ from pathlib import Path
 from constants import (
     OP_AND, OP_OR, OP_NOT, LOGICAL_OPS,
     OP_EQ, OP_NE, OP_LT, OP_LTE, OP_GT, OP_GTE, OP_CONTAINS, COMPARISON_OPS,
+    MAX_FILTER_LENGTH,
 )
 from schemas.product import Product
 from pydantic import TypeAdapter
@@ -102,6 +103,8 @@ def search_products(filters: str = "") -> dict:
 
     if not filters:
         results = products
+    elif len(filters) > MAX_FILTER_LENGTH:
+        return {"status": "error", "message": f"Filter string exceeds maximum length of {MAX_FILTER_LENGTH} characters"}
     else:
         try:
             filter_tree = json.loads(filters)
