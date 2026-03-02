@@ -31,21 +31,22 @@ def _eval_node(product: dict, node: dict) -> bool:
         if op == OP_AND:
             return all(_eval_node(product, child) for child in conditions)
         return any(_eval_node(product, child) for child in conditions)
+    elif op in COMPARISON_OPS:
+        field = node["field"].lower()
+        value = node["value"]
+        product_value = product.get(field)
 
-    # Leaf node
-    field = node["field"].lower()
-    value = node["value"]
-    product_value = product.get(field)
+        if field == "category":
+            product_value = (product_value or "").lower()
+            value = value.lower() if isinstance(value, str) else value
 
-    if field == "category":
-        product_value = (product_value or "").lower()
-        value = value.lower() if isinstance(value, str) else value
+        cmp_func = _COMPARISON_FUNCS.get(op)
+        if cmp_func:
+            return cmp_func(product_value, value)
 
-    cmp_func = _COMPARISON_FUNCS.get(op)
-    if cmp_func:
-        return cmp_func(product_value, value)
-
-    return True
+        return True
+    else:
+        raise ValueError(f"Invalid operator: {op}")
 
 
 def search_products(filters: str = "") -> dict:
