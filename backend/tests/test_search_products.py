@@ -6,11 +6,11 @@ from pathlib import Path
 
 import pytest
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "app"))
 
-from tools.search_products import search_products, _eval_node
-from schemas.product import Product
-from constants import MAX_FILTER_LENGTH
+from app.tools.search_products import search_products, _eval_node
+from app.schemas.product import Product
+from app.constants import MAX_FILTER_LENGTH
 
 
 # ---- helpers ----------------------------------------------------------------
