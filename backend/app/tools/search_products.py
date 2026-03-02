@@ -1,7 +1,10 @@
 import json
 import operator
 from pathlib import Path
-from constants import *
+from constants import (
+    OP_AND, OP_OR, OP_NOT, LOGICAL_OPS,
+    OP_EQ, OP_NE, OP_LT, OP_LTE, OP_GT, OP_GTE, OP_CONTAINS, COMPARISON_OPS,
+)
 from schemas.product import Product
 from pydantic import TypeAdapter
 

@@ -1,6 +1,9 @@
 from google.adk.agents import Agent
 from tools.search_products import search_products
-from constants import *
+from constants import (
+    OP_AND, OP_OR, OP_NOT,
+    OP_EQ, OP_NE, OP_LT, OP_LTE, OP_GT, OP_GTE, OP_CONTAINS,
+)
 
 _LOGICAL_OPS_STR = "|".join(f'"{op.upper()}"' for op in (OP_AND, OP_OR))
 _COMPARISON_OPS_STR = "|".join(
