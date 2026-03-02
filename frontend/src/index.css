@@ -194,6 +194,16 @@ body {
   background: #f5f5f5;
 }
 
+.product-card__image--fallback {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  color: #9ca3af;
+  font-size: 0.75rem;
+}
+
 .product-card__body {
   padding: 0.65rem 0.75rem 0.75rem;
   display: flex;
