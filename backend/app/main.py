@@ -11,6 +11,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from google.adk.runners import Runner
 from google.adk.sessions import InMemorySessionService
+from google.api_core.exceptions import PermissionDenied, Unauthenticated
 from google.genai import types as genai_types
 
 from agent import root_agent
@@ -56,48 +57,66 @@ async def health():
 
 @app.post("/chat", response_model=ChatResponse)
 async def chat(request: ChatRequest) -> ChatResponse:
-    session_id = request.session_id or str(uuid.uuid4())
-    user_id = "user"
-
-    # Ensure session exists
-    existing = await _session_service.get_session(
-        app_name=_APP_NAME, user_id=user_id, session_id=session_id
-    )
-    if existing is None:
-        await _session_service.create_session(
-            app_name=_APP_NAME, user_id=user_id, session_id=session_id
+    if not os.getenv("GOOGLE_API_KEY"):
+        return ChatResponse(
+            text="Google API key is missing. Please set the GOOGLE_API_KEY environment variable.",
+            products=[],
         )
 
-    # Build user message
-    user_message = genai_types.Content(
-        role="user",
-        parts=[genai_types.Part(text=request.query)],
-    )
+    try:
+        session_id = request.session_id or str(uuid.uuid4())
+        user_id = "user"
 
-    # Run agent and collect final text response
-    final_text = ""
-    async for event in _runner.run_async(
-        user_id=user_id,
-        session_id=session_id,
-        new_message=user_message,
-    ):
-        if event.is_final_response() and event.content and event.content.parts:
-            final_text = "".join(
-                part.text for part in event.content.parts if part.text
+        # Ensure session exists
+        existing = await _session_service.get_session(
+            app_name=_APP_NAME, user_id=user_id, session_id=session_id
+        )
+        if existing is None:
+            await _session_service.create_session(
+                app_name=_APP_NAME, user_id=user_id, session_id=session_id
             )
 
-    # Extract products JSON block
-    products: list[Product] = []
-    match = PRODUCTS_JSON_RE.search(final_text)
-    if match:
-        try:
-            raw = json.loads(match.group(1))
-            products = [Product.model_validate(p) for p in raw]
-        except (json.JSONDecodeError, ValueError):
-            products = []
-        # Remove the raw block from displayed text
-        display_text = PRODUCTS_JSON_RE.sub("", final_text).strip()
-    else:
-        display_text = final_text.strip()
+        # Build user message
+        user_message = genai_types.Content(
+            role="user",
+            parts=[genai_types.Part(text=request.query)],
+        )
 
-    return ChatResponse(text=display_text, products=products)
+        # Run agent and collect final text response
+        final_text = ""
+        async for event in _runner.run_async(
+            user_id=user_id,
+            session_id=session_id,
+            new_message=user_message,
+        ):
+            if event.is_final_response() and event.content and event.content.parts:
+                final_text = "".join(
+                    part.text for part in event.content.parts if part.text
+                )
+
+        # Extract products JSON block
+        products: list[Product] = []
+        match = PRODUCTS_JSON_RE.search(final_text)
+        if match:
+            try:
+                raw = json.loads(match.group(1))
+                products = [Product.model_validate(p) for p in raw]
+            except (json.JSONDecodeError, ValueError):
+                products = []
+            # Remove the raw block from displayed text
+            display_text = PRODUCTS_JSON_RE.sub("", final_text).strip()
+        else:
+            display_text = final_text.strip()
+
+        return ChatResponse(text=display_text, products=products)
+
+    except (PermissionDenied, Unauthenticated):
+        return ChatResponse(
+            text="Invalid Google API key. Please check your GOOGLE_API_KEY environment variable.",
+            products=[],
+        )
+    except Exception:
+        return ChatResponse(
+            text="Something went wrong. Please try again later.",
+            products=[],
+        )
