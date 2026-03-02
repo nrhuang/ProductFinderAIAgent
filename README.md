@@ -33,7 +33,8 @@ cp .env.example .env
 # Edit .env and add your Google API key
 
 # Start the server
-uvicorn app.main:app --reload
+cd app
+uvicorn main:app --reload
 ```
 
 The API will be available at `http://localhost:8000`.
