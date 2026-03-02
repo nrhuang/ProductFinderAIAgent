@@ -1,3 +1,4 @@
+import Markdown from "react-markdown";
 import type { Message } from "../types";
 import ProductGrid from "./ProductGrid";
 
@@ -25,8 +26,20 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
               <span />
               <span />
             </span>
-          ) : (
+          ) : isUser ? (
             message.text
+          ) : (
+            <Markdown
+              components={{
+                a: ({ children, href, ...rest }) => (
+                  <a href={href} target="_blank" rel="noopener noreferrer" {...rest}>
+                    {children}
+                  </a>
+                ),
+              }}
+            >
+              {message.text}
+            </Markdown>
           )}
         </div>
       </div>
