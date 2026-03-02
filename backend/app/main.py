@@ -15,6 +15,7 @@ from google.genai import types as genai_types
 
 from agent import root_agent
 from schemas.chat import ChatRequest, ChatResponse
+from schemas.product import Product
 
 # ---------------------------------------------------------------------------
 # ADK setup
@@ -86,12 +87,13 @@ async def chat(request: ChatRequest) -> ChatResponse:
             )
 
     # Extract products JSON block
-    products: list[dict] = []
+    products: list[Product] = []
     match = PRODUCTS_JSON_RE.search(final_text)
     if match:
         try:
-            products = json.loads(match.group(1))
-        except json.JSONDecodeError:
+            raw = json.loads(match.group(1))
+            products = [Product.model_validate(p) for p in raw]
+        except (json.JSONDecodeError, ValueError):
             products = []
         # Remove the raw block from displayed text
         display_text = PRODUCTS_JSON_RE.sub("", final_text).strip()

@@ -2,11 +2,13 @@ import json
 import operator
 from pathlib import Path
 from constants import *
+from schemas.product import Product
+from pydantic import TypeAdapter
 
 PRODUCTS_PATH = Path(__file__).resolve().parent.parent / "data/products.json"
 
 with open(PRODUCTS_PATH, "r") as _f:
-    _PRODUCTS = json.load(_f)
+    _PRODUCTS: list[Product] = TypeAdapter(list[Product]).validate_json(_f.read())
 
 _COMPARISON_FUNCS = {
     OP_EQ: operator.eq,
@@ -18,7 +20,7 @@ _COMPARISON_FUNCS = {
     OP_CONTAINS: operator.contains,
 }
 
-def _eval_node(product: dict, node: dict) -> bool:
+def _eval_node(product: Product, node: dict) -> bool:
     """Recursively evaluate a filter tree node against a product."""
     op = node["op"].lower()
 
@@ -34,10 +36,10 @@ def _eval_node(product: dict, node: dict) -> bool:
     elif op in COMPARISON_OPS:
         field = node["field"].lower()
         value = node["value"]
-        product_value = product.get(field)
+        product_value = getattr(product, field)
 
         if field == "category":
-            product_value = (product_value or "").lower()
+            product_value = product_value.lower()
             value = value.lower() if isinstance(value, str) else value
 
         cmp_func = _COMPARISON_FUNCS.get(op)
@@ -109,4 +111,4 @@ def search_products(filters: str = "") -> dict:
             "message": "No products found matching your criteria.",
         }
 
-    return {"status": "success", "products": results}
+    return {"status": "success", "products": [p.model_dump() for p in results]}
