@@ -1,4 +1,5 @@
 import json
+import operator
 from pathlib import Path
 from constants import *
 
@@ -6,6 +7,16 @@ PRODUCTS_PATH = Path(__file__).resolve().parent.parent / "data/products.json"
 
 with open(PRODUCTS_PATH, "r") as _f:
     _PRODUCTS = json.load(_f)
+
+_COMPARISON_FUNCS = {
+    OP_EQ: operator.eq,
+    OP_NE: operator.ne,
+    OP_LT: operator.lt,
+    OP_LTE: operator.le,
+    OP_GT: operator.gt,
+    OP_GTE: operator.ge,
+    OP_CONTAINS: operator.contains,
+}
 
 def _eval_node(product: dict, node: dict) -> bool:
     """Recursively evaluate a filter tree node against a product."""
@@ -23,7 +34,6 @@ def _eval_node(product: dict, node: dict) -> bool:
 
     # Leaf node
     field = node["field"].lower()
-    cmp_op = op
     value = node["value"]
     product_value = product.get(field)
 
@@ -31,20 +41,9 @@ def _eval_node(product: dict, node: dict) -> bool:
         product_value = (product_value or "").lower()
         value = value.lower() if isinstance(value, str) else value
 
-    if cmp_op == OP_EQ:
-        return product_value == value
-    elif cmp_op == OP_NE:
-        return product_value != value
-    elif cmp_op == OP_LT:
-        return product_value < value
-    elif cmp_op == OP_LTE:
-        return product_value <= value
-    elif cmp_op == OP_GT:
-        return product_value > value
-    elif cmp_op == OP_GTE:
-        return product_value >= value
-    elif cmp_op == OP_CONTAINS:
-        return value.lower() in str(product_value).lower()
+    cmp_func = _COMPARISON_FUNCS.get(op)
+    if cmp_func:
+        return cmp_func(product_value, value)
 
     return True
 
