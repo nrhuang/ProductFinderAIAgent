@@ -10,6 +10,8 @@ PRODUCTS_PATH = Path(__file__).resolve().parent.parent / "data/products.json"
 with open(PRODUCTS_PATH, "r") as _f:
     _PRODUCTS: list[Product] = TypeAdapter(list[Product]).validate_json(_f.read())
 
+_ALLOWED_FIELDS = {"category", "price", "name"}
+
 _COMPARISON_FUNCS = {
     OP_EQ: operator.eq,
     OP_NE: operator.ne,
@@ -26,6 +28,8 @@ def _eval_node(product: Product, node: dict) -> bool:
 
     if op in LOGICAL_OPS:
         conditions = node.get("conditions", [])
+        if not conditions:
+            raise ValueError(f"{op.upper()} node must have at least 1 condition")
         if op == OP_NOT:
             if len(conditions) != 1:
                 raise ValueError(f"NOT node must have exactly 1 condition, got {len(conditions)}")
@@ -35,6 +39,8 @@ def _eval_node(product: Product, node: dict) -> bool:
         return any(_eval_node(product, child) for child in conditions)
     elif op in COMPARISON_OPS:
         field = node["field"].lower()
+        if field not in _ALLOWED_FIELDS:
+            raise ValueError(f"Invalid field: {field}")
         value = node["value"]
         product_value = getattr(product, field)
 
@@ -43,10 +49,9 @@ def _eval_node(product: Product, node: dict) -> bool:
             value = value.lower() if isinstance(value, str) else value
 
         cmp_func = _COMPARISON_FUNCS.get(op)
-        if cmp_func:
-            return cmp_func(product_value, value)
-
-        return True
+        if cmp_func is None:
+            raise ValueError(f"Invalid operator: {op}")
+        return cmp_func(product_value, value)
     else:
         raise ValueError(f"Invalid operator: {op}")
 
@@ -102,7 +107,7 @@ def search_products(filters: str = "") -> dict:
 
         try:
             results = [p for p in products if _eval_node(p, filter_tree)]
-        except (KeyError, TypeError, ValueError) as e:
+        except (KeyError, TypeError, ValueError, AttributeError) as e:
             return {"status": "error", "message": f"Invalid filter structure: {e}"}
 
     if not results:

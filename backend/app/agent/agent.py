@@ -9,7 +9,7 @@ _COMPARISON_OPS_STR = "|".join(
 
 root_agent = Agent(
     name="product_finder",
-    model="gemini-3-flash-preview",
+    model="gemini-2.5-flash",
     description="Helps users find products using natural language queries.",
     instruction=f"""You are a helpful product finder assistant.
 
