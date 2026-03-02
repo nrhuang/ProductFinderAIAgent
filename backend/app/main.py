@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 import re
 import uuid
@@ -17,6 +18,8 @@ from google.genai import types as genai_types
 from agent import root_agent
 from schemas.chat import ChatRequest, ChatResponse
 from schemas.product import Product
+
+logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
 # ADK setup
@@ -116,6 +119,7 @@ async def chat(request: ChatRequest) -> ChatResponse:
             products=[],
         )
     except Exception:
+        logger.exception("Unhandled error in /chat endpoint")
         return ChatResponse(
             text="Something went wrong. Please try again later.",
             products=[],

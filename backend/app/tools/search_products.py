@@ -1,4 +1,5 @@
 import json
+import logging
 import operator
 from pathlib import Path
 from constants import (
@@ -8,6 +9,8 @@ from constants import (
 )
 from schemas.product import Product
 from pydantic import TypeAdapter
+
+logger = logging.getLogger(__name__)
 
 PRODUCTS_PATH = Path(__file__).resolve().parent.parent / "data/products.json"
 
@@ -108,6 +111,8 @@ def search_products(filters: str = "") -> dict:
     else:
         try:
             filter_tree = json.loads(filters)
+            logger.info("filters: %s", filters)
+            logger.info("filter_tree: %s", filter_tree)
         except json.JSONDecodeError as e:
             return {"status": "error", "message": f"Invalid filter JSON: {e}"}
 
