@@ -6,7 +6,6 @@ from pathlib import Path
 
 import pytest
 
-# Add backend/app to path so bare imports in search_products resolve
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from tools.search_products import search_products, _eval_node
