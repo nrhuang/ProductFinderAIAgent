@@ -1,6 +1,6 @@
 # Product Finder AI Agent - Backend
 
-A FastAPI server that uses Google's Gemini 2.5 Flash model (via Google ADK) to power a conversational product search agent. Users ask natural language questions and the agent translates them into structured filter trees to search a local product catalog.
+A FastAPI server that uses Google's Gemini 3 Flash model (via Google ADK) to power a conversational product search agent. Users ask natural language questions and the agent translates them into structured filter trees to search a local product catalog.
 
 ## Prerequisites
 

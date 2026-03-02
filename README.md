@@ -4,7 +4,7 @@ A full-stack AI-powered product search application. Users can ask natural langua
 
 ## Tech Stack
 
-**Backend:** Python 3.10+, FastAPI, Google Gemini 2.5 Flash (via Google ADK)
+**Backend:** Python 3.10+, FastAPI, Google Gemini 3 Flash (via Google ADK)
 **Frontend:** React 19, TypeScript, Vite
 
 ## Getting Started

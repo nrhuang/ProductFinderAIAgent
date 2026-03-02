@@ -3,16 +3,21 @@ import type { Message } from "./types";
 import { sendMessage } from "./api/agentApi";
 import ChatWindow from "./components/ChatWindow";
 
+const greetingMessage: Message = {
+  id: "greeting",
+  role: "agent",
+  text: "Hey! I'm your Product Finder assistant. Ask me about any product — I can search and recommend items for you.",
+  products: [],
+};
+
 export default function App() {
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<Message[]>([greetingMessage]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [sessionId] = useState(() => crypto.randomUUID());
   const inputRef = useRef<HTMLInputElement>(null);
 
-  async function handleSubmit(e: FormEvent) {
-    e.preventDefault();
-    const query = input.trim();
+  async function sendQuery(query: string) {
     if (!query || isLoading) return;
 
     const userMsg: Message = {
@@ -63,15 +68,31 @@ export default function App() {
     }
   }
 
+  function handleSubmit(e: FormEvent) {
+    e.preventDefault();
+    sendQuery(input.trim());
+  }
+
   return (
     <div className="app">
       <header className="app-header">
-        <h1>Product Finder</h1>
-        <p>Ask me anything about our products</p>
+        <div className="app-header__icon">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2L13.09 8.26L18 6L14.74 10.91L21 12L14.74 13.09L18 18L13.09 15.74L12 22L10.91 15.74L6 18L9.26 13.09L3 12L9.26 10.91L6 6L10.91 8.26L12 2Z" />
+          </svg>
+        </div>
+        <div>
+          <h1>Product Finder</h1>
+          <p>Ask me anything about our products</p>
+        </div>
       </header>
 
       <main className="app-main">
-        <ChatWindow messages={messages} />
+        <ChatWindow
+          messages={messages}
+          onSuggestionClick={sendQuery}
+          showSuggestions={messages.length === 1}
+        />
       </main>
 
       <footer className="app-footer">
@@ -91,7 +112,9 @@ export default function App() {
             type="submit"
             disabled={isLoading || !input.trim()}
           >
-            Send
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
+            </svg>
           </button>
         </form>
       </footer>

@@ -24,26 +24,51 @@ body {
 #root {
   height: 100vh;
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
 }
 
 /* =============================================
-   App Layout
+   App Layout (Card)
    ============================================= */
 .app {
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  height: 90vh;
+  max-height: 700px;
   max-width: 900px;
-  margin: 0 auto;
   width: 100%;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
 }
 
 .app-header {
-  background: #1a1a2e;
+  background: linear-gradient(135deg, #1a1a2e 0%, #2d2b55 100%);
   color: #fff;
   padding: 1rem 1.5rem;
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.app-header__icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.app-header__icon svg {
+  width: 22px;
+  height: 22px;
+  fill: #fff;
 }
 
 .app-header h1 {
@@ -62,6 +87,7 @@ body {
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  background: #f7f8fa;
 }
 
 .app-footer {
@@ -83,11 +109,31 @@ body {
   gap: 1rem;
 }
 
-.chat-window__empty {
-  color: #888;
-  text-align: center;
-  margin-top: 3rem;
-  font-size: 0.95rem;
+/* =============================================
+   Message Content (Avatar + Bubble wrapper)
+   ============================================= */
+.message-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.agent-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: #4f46e5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.agent-avatar svg {
+  width: 16px;
+  height: 16px;
+  fill: #fff;
 }
 
 /* =============================================
@@ -127,6 +173,34 @@ body {
   color: #1a1a2e;
   border-bottom-left-radius: 4px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+/* =============================================
+   Suggestion Pills
+   ============================================= */
+.suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding-left: 42px;
+  margin-top: 0.25rem;
+}
+
+.suggestions__pill {
+  padding: 0.4rem 0.85rem;
+  border: 1px solid #d1d5db;
+  border-radius: 99px;
+  background: #fff;
+  color: #374151;
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+}
+
+.suggestions__pill:hover {
+  background: #4f46e5;
+  color: #fff;
+  border-color: #4f46e5;
 }
 
 /* =============================================
@@ -253,6 +327,7 @@ body {
 .chat-form {
   display: flex;
   gap: 0.5rem;
+  align-items: center;
 }
 
 .chat-input {
@@ -276,16 +351,25 @@ body {
 }
 
 .chat-submit {
-  padding: 0.65rem 1.25rem;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
   background: #4f46e5;
   color: #fff;
   border: none;
-  border-radius: 24px;
-  font-size: 0.92rem;
-  font-weight: 600;
   cursor: pointer;
   transition: background 0.2s;
-  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 0;
+}
+
+.chat-submit svg {
+  width: 18px;
+  height: 18px;
+  fill: #fff;
 }
 
 .chat-submit:hover:not(:disabled) {
@@ -295,4 +379,20 @@ body {
 .chat-submit:disabled {
   background: #a5b4fc;
   cursor: not-allowed;
+}
+
+/* =============================================
+   Mobile
+   ============================================= */
+@media (max-width: 640px) {
+  #root {
+    padding: 0;
+  }
+
+  .app {
+    height: 100vh;
+    max-height: none;
+    border-radius: 0;
+    box-shadow: none;
+  }
 }
